@@ -2,7 +2,7 @@
  * @Author: Yao xinyue kother@qq.com
  * @Date: 2024-01-18 01:56:51
  * @LastEditors: xuning 453594138@qq.com
- * @LastEditTime: 2024-03-07 20:42:28
+ * @LastEditTime: 2024-03-13 15:25:17
  * @FilePath: \spx-gui\src\language\index.ts
  * @Description:
  */
@@ -18,7 +18,9 @@ export const initI18n = async (app: App) => {
       tab: {
         code: 'Code',
         sound: 'Sound',
-        costume: 'Costume'
+        costume: 'Costume',
+        signIn: 'Sign in',
+        logOut: 'Logout'
       },
       sounds: {
         hint: '🎵 Sound Edit',
@@ -36,7 +38,11 @@ export const initI18n = async (app: App) => {
         copy: 'Copy',
         insert: 'Insert',
         download: 'Download',
-        save: 'Save'
+        save: 'Save',
+        record: 'Record',
+        soundName: 'Sound Name',
+        startRecording: 'Start Recording',
+        stopRecording: 'Stop Recording'
       },
       toolbox: {
         event: 'Event',
@@ -71,7 +77,7 @@ export const initI18n = async (app: App) => {
         edit: 'Editor'
       },
       stage: {
-        stage: 'Backdrop',
+        stage: 'Stage',
         stop:'Stop',
         sprite: 'Sprite',
         spriteHolder: 'Please Input Name',
@@ -92,7 +98,8 @@ export const initI18n = async (app: App) => {
         category:'Category',
         public:'IsPublic',
         inputName:'Please input sprite name',
-        selectCategory:'Please choose sprite category'
+        selectCategory:'Please choose sprite category',
+        uploadLimited:'A single image less than 2 MB'
       },
       scratch: {
         import: 'Import Assets from Scratch',
@@ -142,13 +149,40 @@ export const initI18n = async (app: App) => {
         localProject: 'Local Project',
         cloudProjectInLocal: 'Cloud Project In Local',
       },
+      library:{
+        search: 'Search',
+        public: 'public',
+        private: 'private',
+        empty:'There\'s nothing',
+      },
+      layer: {
+        up: 'up',
+        down: 'down',
+        top: 'top',
+        bottom: 'bottom'
+      },
+      message: {
+        image: 'Unsupported image type',
+        sound: 'Unsupported sound type',
+        fileType: 'Unsupported file type',
+        other: 'Invalid or non-existent uploaded files',
+        success: 'Added {uploadSpriteName} to list successfully!',
+        fail: 'Failed to upload {uploadSpriteName}',
+        addSuccess: 'add {name} successfully!',
+        update: 'update name successfully!',
+        save: 'save successfully!',
+        import: 'import successfully!',
+        updateNameError: 'Cannot update asset name. Name is invalid! ',
+      }
     },
     zh: {
       language: '中文',
       tab: {
         code: '编程',
         sound: '音频',
-        costume: '造型'
+        costume: '造型',
+        signIn: '登录',
+        logOut: '登出'
       },
       sounds: {
         hint: '🎵 音频编辑',
@@ -167,7 +201,11 @@ export const initI18n = async (app: App) => {
         copy: '复制',
         insert: '插入',
         download: '下载',
-        save: '保存'
+        save: '保存',
+        record: '录音',
+        soundName: '音频名称',
+        startRecording: '开始录音',
+        stopRecording: '停止录音'
       },
       toolbox: {
         event: '事件',
@@ -202,7 +240,7 @@ export const initI18n = async (app: App) => {
         edit: '编辑'
       },
       stage: {
-        stage: '背景',
+        stage: '舞台',
         stop:'停止',
         sprite: '角色',
         spriteHolder: '请输入名字',
@@ -223,7 +261,8 @@ export const initI18n = async (app: App) => {
         category:'精灵类别',
         public:'是否公开',
         inputName:'请输入精灵名称',
-        selectCategory:'请选择类别'
+        selectCategory:'请选择类别',
+        uploadLimited:'单张图片小于 2 MB'
       },
       scratch: {
         import: '导入 Scratch 素材',
@@ -270,6 +309,31 @@ export const initI18n = async (app: App) => {
         no: '否',
         localProject: '本地项目',
         cloudProjectInLocal: '本地的云端项目',
+      },
+      library:{
+        search: '搜索',
+        public: '公开',
+        private: '私有',
+        empty: '空空如也',
+      },
+      layer: {
+        up: '上移',
+        down: '下移',
+        top: '置顶',
+        bottom: '置底'
+      },
+      message: {
+        image: '不支持的图片类型',
+        sound: '不支持的音频类型',
+        fileType: '不支持的文件类型',
+        other: '上传的文件无效或不存在',
+        success: '成功将 {uploadSpriteName} 添加到列表！',
+        fail: '上传 {uploadSpriteName} 失败',
+        addSuccess: '成功添加 {name}！',
+        update: '名称更新成功！',
+        save: '保存成功！',
+        import: '导入成功！',
+        updateNameError: '无法更新资源名称。名称无效！',
       }
     }
   }

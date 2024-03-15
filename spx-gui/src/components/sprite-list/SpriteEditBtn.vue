@@ -109,6 +109,7 @@ import { NInput, NInputNumber, NFlex, NSwitch, createDiscreteApi } from 'naive-u
 import { useSpriteStore } from '@/store/modules/sprite'
 import { checkUpdatedName } from '@/util/asset';
 import { useProjectStore } from '@/store';
+import { useI18n } from "vue-i18n"
 
 // ----------props & emit------------------------------------
 const spriteStore = useSpriteStore()
@@ -120,6 +121,9 @@ const heading = computed(() => (spriteStore.current ? spriteStore.current.config
 const size = computed(() => (spriteStore.current ? spriteStore.current.config.size : 0))
 const visible = computed(() => (spriteStore.current ? spriteStore.current.config.visible : false))
 const name = ref(spriteStore.current ? spriteStore.current.name : '')
+const { t } = useI18n({
+  inheritLocale: true
+})
 watch(() => spriteStore.current?.name, (newName) => {
   name.value = newName || ''
 })
@@ -129,16 +133,18 @@ function handleUpdateSpriteName(){
   if (!spriteStore.current) return
   try {
     const project = useProjectStore().project
-    const checkInfo = checkUpdatedName(spriteStore.current, name.value, project)
-    console.log('zorder1',checkInfo.name, name.value, project.backdrop.config.zorder);
-    if (checkInfo.isChanged) {
+    const checkInfo = checkUpdatedName(name.value, useProjectStore().project, spriteStore.current.name)
+
+    if (!checkInfo.isSame && !checkInfo.isChanged) {
+      // update zorder
       const zorder = project.backdrop.config.zorder
-      zorder.push(checkInfo.name)
       project.backdrop.config.zorder = zorder.filter(item => item !== spriteStore.current?.name)
+      project.backdrop.config.zorder.push(checkInfo.name)
+
       spriteStore.current.name = checkInfo.name
-      message.success('update name successfully!')
+      message.success(t('message.update'))
     }
-    if (checkInfo.msg) message.warning(checkInfo.msg);
+    if (checkInfo.msg) message.warning(checkInfo.msg)
   } catch(e) {
     if (e instanceof Error)
       message.error(e.message)

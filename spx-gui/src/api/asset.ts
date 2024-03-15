@@ -2,7 +2,7 @@
  * @Author: Yao xinyue
  * @Date: 2024-01-22 11:17:08
  * @LastEditors: xuning 453594138@qq.com
- * @LastEditTime: 2024-03-11 18:34:52
+ * @LastEditTime: 2024-03-14 11:22:33
  * @FilePath: \spx-gui\src\api\asset.ts
  * @Description:
  */
@@ -10,6 +10,7 @@ import { service } from '@/axios'
 import type { Asset, PageAssetResponse } from '@/interface/library.ts' // Adjust the import paths as needed
 import type { ResponseData } from '@/axios'
 import type { AxiosResponse } from 'axios'
+import { PublicStatus } from "@/class/project";
 
 export enum PublishState {
   NotPublished = -1,
@@ -30,7 +31,7 @@ export enum PublishState {
  * @returns PageAssetResponse
  */
 export function getAssetList({
-  assetLibraryType,
+  isPublic,
   pageIndex,
   pageSize,
   assetType,
@@ -39,28 +40,24 @@ export function getAssetList({
   isOrderByHot,
   author
 }: {
-  assetLibraryType: string
   pageIndex: number
   pageSize: number
   assetType: number
   category?: string
   isOrderByTime?: boolean
   isOrderByHot?: boolean
+  isPublic?: PublicStatus
   author?: string
 }): Promise<PageAssetResponse> {
   const baseAssetUrl = '/assets/list'
-  let isPublic = ''
-  if (assetLibraryType == 'public') {
-    isPublic = PublishState.PublicAndPrivateLibrary.toString()
-  } else if (assetLibraryType == 'private') {
-    isPublic = PublishState.PrivateLibrary.toString()
-  }
   const params = new URLSearchParams()
-  params.append('isPublic', isPublic)
   params.append('pageIndex', pageIndex.toString())
   params.append('pageSize', pageSize.toString())
   params.append('assetType', assetType.toString())
-
+  
+  if (isPublic!=null) {
+    params.append('isPublic', isPublic.toString())
+  }
   if (category) {
     params.append('category', category)
   }
@@ -102,9 +99,14 @@ export function getAsset(id: number): Promise<Asset> {
  * @param {number} assetType
  * @return { SearchAssetResponse }
  */
-export function searchAssetByName(pageIndex: number, pageSize: number,search: string, assetType: number): Promise<PageAssetResponse> {
+export function searchAssetByName(
+  pageIndex: number,
+  pageSize: number,
+  search: string,
+  assetType: number
+): Promise<PageAssetResponse> {
   const baseAssetUrl = `/assets/search`
-  
+
   const params = new URLSearchParams()
   params.append('pageIndex', pageIndex.toString())
   params.append('pageSize', pageSize.toString())
@@ -112,10 +114,10 @@ export function searchAssetByName(pageIndex: number, pageSize: number,search: st
   params.append('assetType', assetType.toString())
 
   const url = `${baseAssetUrl}?${params.toString()}`
-  
+
   return service({
     url: url,
-    method: 'get',
+    method: 'get'
   })
 }
 
@@ -165,9 +167,7 @@ export async function saveAsset(
  * @param assetType The type of the asset. See src/constant/constant.ts for details.
  * @return {Promise<AxiosResponse<ResponseData<string>>>}
  */
-export function addAssetClickCount(
-  id: number
-): Promise<AxiosResponse<ResponseData<string>>> {
+export function addAssetClickCount(id: number): Promise<AxiosResponse<ResponseData<string>>> {
   const url = `/asset/${id}/click-count`
   return service({
     url: url,

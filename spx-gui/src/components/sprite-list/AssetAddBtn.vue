@@ -35,6 +35,7 @@
       <n-button
         v-if="props.type == 'backdrop'"
         color="#fff"
+        :disabled="networkStore.offline()"
         quaternary
         size="tiny"
         text-color="#fff"
@@ -44,6 +45,7 @@
       </n-button>
       <n-button
         v-else-if="props.type == 'sprite'"
+        :disabled="networkStore.offline()"
         color="#fff"
         :text-color="commonColor"
         @click="openLibraryFunc()"
@@ -57,7 +59,7 @@
         :text-color="commonColor"
         @click="openRecorderFunc()"
       >
-        Record
+        {{ $t('sounds.record') }}
       </n-button>
 
       <!-- E Component Add Button second step -->
@@ -97,7 +99,8 @@
         list-type="image-card"
         multiple
         @change="handleWatchFileList"
-      />
+        >{{ $t('list.uploadLimited') }}
+      </n-upload>
     </div>
     <div class="modal-items">
       <p class="modal-items-p">{{ $t('list.category') }}:</p>
@@ -145,6 +148,8 @@ import { generateGifByCostumes, publishAsset, PublishState } from '@/api/asset'
 import { useI18n } from 'vue-i18n'
 import { AssetType } from '@/constant/constant'
 import { isValidAssetName } from '@/util/asset'
+import { useNetworkStore } from '@/store/modules/network'
+import { isImage, isSound } from '@/util/utils'
 
 // ----------props & emit------------------------------------
 interface PropType {
@@ -155,6 +160,8 @@ const message = useMessage()
 const spriteStore = useSpriteStore()
 const backdropStore = useBackdropStore()
 const soundStore = useSoundStore()
+const networkStore = useNetworkStore()
+
 const { t } = useI18n({
   inheritLocale: true
 })
@@ -259,26 +266,34 @@ const beforeUpload = (
   if (uploadFile.file) {
     let fileURL = URL.createObjectURL(uploadFile.file)
     let fileWithUrl = new FileWithUrl(uploadFile.file, fileURL)
-
     let fileName = uploadFile.name
     let fileNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'))
+
     switch (fileType) {
       case 'backdrop': {
+        if (!isImage(fileName)) {
+          message.error(t('message.image'))
+          return false
+        }
         let backdrop = backdropStore.backdrop
         backdrop.addScene([{ name: fileNameWithoutExtension, file: fileWithUrl }])
         break
       }
       case 'sound': {
+        if (!isSound(fileName)) {
+          message.error(t('message.sound'))
+          return false
+        }
         let sound = new Sound(fileNameWithoutExtension, [uploadFile.file])
         soundStore.addItem(sound)
         break
       }
       default:
-        message.error('Unsupported file type')
+        message.error(t('message.fileType'))
         return false
     }
   } else {
-    message.error('Invalid or non-existent uploaded files')
+    message.error(t('message.other'))
     return false
   }
   return true
@@ -315,16 +330,23 @@ const handleWatchFileList = (data: {
  * @Author: Xu Ning
  * @Date: 2024-02-21 17:48:33
  */
-const handleSubmitSprite = async () => {
+const handleSubmitSprite = async (): Promise<void> => {
   let uploadFilesArr: File[] = []
+  for (const fileItem of uploadFileList.value) {
+    if (!isImage(fileItem.name)) {
+      message.error(t('message.image'))
+      return
+    }
+  }
   uploadFileList.value.forEach((fileItem: UploadFileInfo) => {
     if (fileItem && fileItem.file) {
       uploadFilesArr.push(fileItem.file)
     }
   })
+  console.log('uploadFilesArr', uploadFilesArr)
   let sprite = new Sprite(uploadSpriteName.value, uploadFilesArr)
   spriteStore.addItem(sprite)
-  message.success(`Added ${uploadSpriteName.value} to list successfully!`)
+  message.success(t('message.success', { uploadSpriteName: uploadSpriteName.value }))
 
   try {
     let gifRes = undefined
@@ -343,7 +365,7 @@ const handleSubmitSprite = async () => {
       categoryValue.value || undefined
     )
   } catch (err) {
-    message.error(`Failed to upload ${uploadSpriteName.value}`)
+    message.error(t('message.fail', { uploadSpriteName: uploadSpriteName.value }))
   }
   uploadSpriteName.value = ''
   showUploadModal.value = false
@@ -379,24 +401,33 @@ async function urlToFile(url: string, filename: string): Promise<File> {
 /**
  * @description: A function to add sprite to list store.
  * @param {*} name - added asset name
- * @param {*} address - added asset file url
+ * @param {*} assetMultiCostumeObj - added asset file obj(name - url)
  * @Author: Xu Ning
  * @Date: 2024-01-30 11:47:25
  */
-const handleAssetAddition = async (name: string, address: string) => {
+const handleAssetAddition = async (name: string, assetMultiCostumeObj: { [key: string]: string }) => {
+  let fileArr: File[] = []
+  for (const [key, value] of Object.entries(assetMultiCostumeObj)) {
+    const file = await urlToFile(value, key)
+    fileArr.push(file)
+  }
   if (props.type === 'sprite') {
-    const file = await urlToFile(address, name)
-    const sprite = new Sprite(name, [file])
+    const sprite = new Sprite(name, fileArr)
     spriteStore.addItem(sprite)
   } else if (props.type === 'backdrop') {
-    const file = await urlToFile(address, name)
-    backdropStore.backdrop.addFile(file)
+    const file = fileArr[0]
+    let fileURL = URL.createObjectURL(file)
+    let fileWithUrl = new FileWithUrl(file, fileURL)
+    let fileNameWithoutExtension = name.substring(0, name.lastIndexOf('.'))
+    let backdrop = backdropStore.backdrop
+    backdrop.addScene([{ name: fileNameWithoutExtension, file: fileWithUrl }])
+    // backdropStore.backdrop.addFile(file)
   } else if (props.type === 'sounds') {
-    const file = await urlToFile(address, name)
+    const file = fileArr[0]
     const sound = new Sound(name, [file])
     soundStore.addItem(sound)
   }
-  message.success(`add ${name} successfully!`)
+  message.success(t('message.addSuccess', { name: name }))
 }
 </script>
 

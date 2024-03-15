@@ -46,7 +46,8 @@ import { Sound } from '@/class/sound'
 import { useSoundStore } from 'store/modules/sound'
 import AssetAddBtn from 'comps/sprite-list/AssetAddBtn.vue'
 import { checkUpdatedName } from "@/util/asset";
-import { useProjectStore } from "@/store";
+import { useProjectStore } from "@/store/modules/project"
+import { useI18n } from "vue-i18n"
 
 const message: MessageApi = useMessage();
 const soundStore = useSoundStore();
@@ -54,6 +55,9 @@ const assets: ComputedRef<Sound[]> = computed(
   () => soundStore.list as Sound[],
 );
 const selectedSound = ref<Sound>();
+const { t } = useI18n({
+  inheritLocale: true
+})
 
 const handleSelect = (asset: Sound) => {
   selectedSound.value = asset;
@@ -62,8 +66,9 @@ const handleSelect = (asset: Sound) => {
 const handleSoundFileUpdate = (newFile: File) => {
   if (selectedSound.value) {
     selectedSound.value.files[0] = newFile;
+    selectedSound.value.config.path = newFile.name;
     message.success(
-      'save successfully!',
+      t('message.save'),
       { duration: 1000 }
     );
   }
@@ -72,10 +77,10 @@ const handleSoundFileUpdate = (newFile: File) => {
 const handleSoundFileNameUpdate = (newName: string) => {
   if (selectedSound.value && newName.trim() !== '') {
     try {
-      const checkInfo = checkUpdatedName(selectedSound.value, newName, useProjectStore().project)
-      if (checkInfo.isChanged) {
-        selectedSound.value.name = checkInfo.name;
-        message.success('update name successfully!')
+      const checkInfo = checkUpdatedName(newName, useProjectStore().project, selectedSound.value.name);
+      if (!checkInfo.isSame && !checkInfo.isChanged) {
+        selectedSound.value.name = checkInfo.name
+        message.success(t('message.update'))
       }
       if (checkInfo.msg) message.warning(checkInfo.msg);
     } catch(e) {
